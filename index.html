@@ -1,14 +1,273 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="./p5.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8" />
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuestBook — экономика очков</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f1115;
+      color: #e6e6eb;
+      margin: 0;
+      padding: 24px;
+    }
+    h1, h2 {
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #171a21;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      background: #2b6cff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.secondary { background: #3a3f4b; }
+    button.danger { background: #b63c3c; }
+    button.delete {
+      background: transparent;
+      color: #9aa0ac;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.delete:hover {
+      color: #e6e6eb;
+    }
+    input {
+      background: #0f1115;
+      color: #e6e6eb;
+      border: 1px solid #2a2f3a;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      text-align: left;
+      padding: 6px;
+      border-bottom: 1px solid #2a2f3a;
+      font-size: 13px;
+    }
+    .balance { font-size: 28px; font-weight: 700; }
+    .muted { color: #9aa0ac; font-size: 12px; }
+  </style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1115">
+</head>
+<body>
+  <div class="container">
+    <h1>QuestBook</h1>
+    <p class="muted">Преврати жизнь в игру</p>
 
-  </head>
-  <body>
-    <main>
-    </main>
-    <script src="sketch.js"></script>
-  </body>
+    <!-- Баланс -->
+    <div class="card">
+      <h2>Баланс</h2>
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <div class="balance" id="balance">0</div>
+        <button class="secondary" onclick="resetAll()">Сброс</button>
+      </div>
+    </div>
+
+    <!-- Доход / расход -->
+    <div class="card">
+      <h2>Доход / расход</h2>
+      <div class="row">
+        <input id="reason" placeholder="Причина" />
+        <input id="amount" type="number" placeholder="Очки (+ / -)" />
+        <button class="secondary" onclick="logCustom()">Записать</button>
+      </div>
+      
+    </div>
+
+    <!-- Каталог наград -->
+    <div class="card">
+      <h2>Каталог наград</h2>
+      <div class="row">
+        <input id="rewardName" placeholder="Награда" />
+        <input id="rewardCost" type="number" placeholder="Цена" />
+        <button class="secondary" onclick="addReward()">Добавить</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th></th><th>Награда</th><th>Цена</th><th></th></tr>
+        </thead>
+        <tbody id="rewards"></tbody>
+      </table>
+    </div>
+
+    <!-- Каталог квестов -->
+    <div class="card">
+      <h2>Каталог квестов</h2>
+      <div class="row">
+        <input id="questName" placeholder="Квест" />
+        <input id="questReward" type="number" placeholder="Очки за завершение" />
+        <button class="secondary" onclick="addQuest()">Добавить</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th></th><th>Квест</th><th>Награда</th><th></th></tr>
+        </thead>
+        <tbody id="quests"></tbody>
+      </table>
+    </div>
+
+    <!-- Журнал -->
+    <div class="card">
+      <h2>Журнал</h2>
+      <table>
+        <thead>
+          <tr><th>Дата</th><th>Причина</th><th>Δ</th><th>Баланс</th><th></th></tr>
+        </thead>
+        <tbody id="log"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let balance = parseInt(localStorage.getItem('balance')) || 0;
+    let log = JSON.parse(localStorage.getItem('log')) || [];
+    let presets = {};
+    let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
+    let quests = JSON.parse(localStorage.getItem('quests')) || [];
+
+    function render() {
+      document.getElementById('balance').textContent = balance;
+      renderLog(); renderRewards(); renderQuests();
+    }
+
+    function addEntry(reason, delta) {
+      if (balance + delta < 0) return;
+      balance += delta;
+      log.push({ date: new Date().toLocaleString(), reason, delta: delta>0?'+'+delta:delta, balance });
+      const key = reason + '|' + delta;
+      presets[key] = (presets[key] || 0) + 1;
+      save();
+    }
+
+    function logCustom() {
+      const r = reason.value.trim();
+      const a = parseInt(amount.value);
+      if (!r || isNaN(a)) return;
+      addEntry(r,a); reason.value=''; amount.value='';
+    }
+
+    function repeat(i){ const e=log[i]; addEntry(e.reason,parseInt(e.delta)); }
+
+    function addReward(){
+      if(!rewardName.value||!rewardCost.value) return;
+      rewards.push({name:rewardName.value,cost:parseInt(rewardCost.value)});
+      rewardName.value=''; rewardCost.value=''; save();
+    }
+
+    function buyReward(i){ const r=rewards[i]; addEntry('Награда: '+r.name, -r.cost); }
+
+    function addQuest(){
+      if(!questName.value||!questReward.value) return;
+      quests.push({name:questName.value,reward:parseInt(questReward.value)});
+      questName.value=''; questReward.value=''; save();
+    }
+
+    function completeQuest(i){ const q=quests[i]; addEntry('Квест завершён: '+q.name, q.reward); }
+
+    function renderLog(){
+      logEl.innerHTML='';
+      log.slice().reverse().forEach((e,idx)=>{
+        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button class="secondary" onclick="repeat(${log.length-1-idx})">↺</button></td></tr>`;
+      });
+    }
+
+    
+    function renderRewards(){
+      rewardsEl.innerHTML='';
+      rewards.forEach((r,i)=>{
+        rewardsEl.innerHTML += `
+          <tr>
+            <td><button class="secondary" onclick="buyReward(${i})">Купить</button></td>
+            <td>${r.name}</td>
+            <td>${r.cost}</td>
+            <td style="text-align:right">
+              <button class="delete" onclick="deleteReward(${i})">✕</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function deleteReward(i){
+      rewards.splice(i,1);
+      save();
+    }
+
+    function renderQuests(){
+      questsEl.innerHTML='';
+      quests.forEach((q,i)=>{
+        questsEl.innerHTML += `
+          <tr>
+            <td><button class="secondary" onclick="completeQuest(${i})">Выполнить</button></td>
+            <td>${q.name}</td>
+            <td>${q.reward}</td>
+            <td style="text-align:right">
+              <button class="delete" onclick="deleteQuest(${i})">✕</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function deleteQuest(i){
+      quests.splice(i,1);
+      save();
+    }
+
+    function save(){
+      localStorage.setItem('balance',balance);
+      localStorage.setItem('log',JSON.stringify(log));
+            localStorage.setItem('rewards',JSON.stringify(rewards));
+      localStorage.setItem('quests',JSON.stringify(quests));
+      render();
+    }
+    
+    function resetAll(){
+      if(!confirm('Сбросить баланс и журнал?')) return;
+      balance = 0;
+      log = [];
+      localStorage.removeItem('balance');
+      localStorage.removeItem('log');
+      render();
+    }
+
+    const logEl = document.getElementById('log');
+    
+    const rewardsEl = document.getElementById('rewards');
+    const questsEl = document.getElementById('quests');
+    render();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
 </html>
