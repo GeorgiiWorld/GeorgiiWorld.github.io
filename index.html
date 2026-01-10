@@ -33,7 +33,7 @@
       align-items: center;
     }
     button {
-      background: #2b6cff;
+      background:  #3a3f4b;
       border: none;
       border-radius: 8px;
       padding: 6px 10px;
@@ -74,6 +74,55 @@
     }
     .balance { font-size: 28px; font-weight: 700; }
     .muted { color: #9aa0ac; font-size: 12px; }
+
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .quest-card {
+      background: #171a21;
+      border-radius: 12px;
+      padding-top: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      touch-action: none;
+    }
+    .card-main {
+      flex: 1;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: #9aa0ac;
+    }
+    .card-actions {
+      margin-right: 10px;
+      display: flex;
+      gap: 6px;
+    }
+    .quest-card.dragging {
+      opacity: 0.6;
+      transform: scale(0.98);
+    }
+    .reward-card {
+      background: #171a21;
+      border-radius: 12px;
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      touch-action: none;
+    }
+    .reward-card.dragging {
+      opacity: 0.6;
+      transform: scale(0.98);
+    }
+
   </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f1115">
@@ -111,12 +160,7 @@
         <input id="rewardCost" type="number" placeholder="Цена" />
         <button class="secondary" onclick="addReward()">Добавить</button>
       </div>
-      <table>
-        <thead>
-          <tr><th></th><th>Награда</th><th>Цена</th><th></th></tr>
-        </thead>
-        <tbody id="rewards"></tbody>
-      </table>
+      <div id="rewards" class="card-list"></div>
     </div>
 
     <!-- Каталог квестов -->
@@ -127,12 +171,7 @@
         <input id="questReward" type="number" placeholder="Очки за завершение" />
         <button class="secondary" onclick="addQuest()">Добавить</button>
       </div>
-      <table>
-        <thead>
-          <tr><th></th><th>Квест</th><th>Очки</th><th></th></tr>
-        </thead>
-        <tbody id="quests"></tbody>
-      </table>
+      <div id="quests" class="card-list"></div>
     </div>
 
     <!-- Журнал -->
@@ -153,6 +192,52 @@
     let presets = {};
     let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     let quests = JSON.parse(localStorage.getItem('quests')) || [];
+    let drag = {
+      type: null,
+      from: null,
+      el: null
+    };
+    function startDrag(e, type) {
+      drag.type = type;
+      drag.el = e.currentTarget;
+      drag.from = Number(drag.el.dataset.index);
+
+      drag.el.classList.add('dragging');
+
+      document.addEventListener('pointermove', onDragMove);
+      document.addEventListener('pointerup', endDrag);
+    }
+    function onDragMove(e) {
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const target = drag.type === 'quests'
+        ? el?.closest('.quest-card')
+        : el?.closest('.reward-card');
+
+      if (!target || target === drag.el) return;
+
+      const to = Number(target.dataset.index);
+      if (to === drag.from) return;
+
+      const list = drag.type === 'quests' ? quests : rewards;
+
+      const item = list.splice(drag.from, 1)[0];
+      list.splice(to, 0, item);
+
+      drag.from = to;
+      render();
+    }
+    function endDrag() {
+      if (drag.el) drag.el.classList.remove('dragging');
+
+      save();
+
+      drag.type = null;
+      drag.from = null;
+      drag.el = null;
+
+      document.removeEventListener('pointermove', onDragMove);
+      document.removeEventListener('pointerup', endDrag);
+    }
 
     function render() {
       document.getElementById('balance').textContent = balance;
@@ -200,19 +285,57 @@
       });
     }
 
-    
-    function renderRewards(){
-      rewardsEl.innerHTML='';
-      rewards.forEach((r,i)=>{
+    function renderRewards() {
+      rewardsEl.innerHTML = '';
+
+      rewards.forEach((r, i) => {
         rewardsEl.innerHTML += `
-          <tr>
-            <td><button class="secondary" onclick="buyReward(${i})">Купить</button></td>
-            <td>${r.name}</td>
-            <td>${r.cost}</td>
-            <td style="text-align:right">
+          <div class="reward-card"
+              data-index="${i}"
+              onpointerdown="startDrag(event, 'rewards')">
+
+            <div class="card-actions">
+              <button class="secondary" onclick="buyReward(${i})">Купить</button>
+            </div>
+
+            <div class="card-main">
+              <div class="card-title">${r.name}</div>
+              <div class="card-sub">цена −${r.cost}</div>
+            </div>
+
+            <div class="card-actions">
               <button class="delete" onclick="deleteReward(${i})">✕</button>
-            </td>
-          </tr>`;
+            </div>
+
+          </div>
+        `;
+      });
+    }
+
+    function renderQuests() {
+      questsEl.innerHTML = '';
+
+      quests.forEach((q, i) => {
+        questsEl.innerHTML += `
+          <div class="quest-card"
+              data-index="${i}"
+              onpointerdown="startDrag(event, 'quests')">
+            
+            <div class="card-actions">
+              <button onclick="completeQuest(${i})">Выполнить</button>
+            </div>
+
+            <div class="card-main">
+              <div class="card-title">${q.name}</div>
+              <div class="card-sub">награда +${q.reward}</div>
+            </div>
+
+            <div class="card-actions">
+              <button class="delete" onclick="deleteQuest(${i})">✕</button>
+            </div>
+
+          </div>
+        `;
       });
     }
 
@@ -220,22 +343,6 @@
       rewards.splice(i,1);
       save();
     }
-
-    function renderQuests(){
-      questsEl.innerHTML='';
-      quests.forEach((q,i)=>{
-        questsEl.innerHTML += `
-          <tr>
-            <td><button class="secondary" onclick="completeQuest(${i})">Выполнить</button></td>
-            <td>${q.name}</td>
-            <td>${q.reward}</td>
-            <td style="text-align:right">
-              <button class="delete" onclick="deleteQuest(${i})">✕</button>
-            </td>
-          </tr>`;
-      });
-    }
-
     function deleteQuest(i){
       quests.splice(i,1);
       save();
