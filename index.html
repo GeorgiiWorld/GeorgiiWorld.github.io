@@ -80,14 +80,14 @@
       flex-direction: column;
       gap: 12px;
     }
-    .quest-card {
+    .quest-card, .reward-card {
       background: #171a21;
       border-radius: 12px;
       padding-top: 5px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      touch-action: none;
+      touch-action: pan-y;
     }
     .card-main {
       flex: 1;
@@ -105,20 +105,13 @@
       display: flex;
       gap: 6px;
     }
-    .quest-card.dragging {
-      opacity: 0.6;
-      transform: scale(0.98);
+    .drag-handle {
+      cursor: grab;
+      padding: 4px 8px;
+      font-weight: bold;
+      user-select: none;
     }
-    .reward-card {
-      background: #171a21;
-      border-radius: 12px;
-      padding: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      touch-action: none;
-    }
-    .reward-card.dragging {
+    .quest-card.dragging, .reward-card.dragging {
       opacity: 0.6;
       transform: scale(0.98);
     }
@@ -290,23 +283,18 @@
 
       rewards.forEach((r, i) => {
         rewardsEl.innerHTML += `
-          <div class="reward-card"
-              data-index="${i}"
-              onpointerdown="startDrag(event, 'rewards')">
-
-            <div class="card-actions">
-              <button class="secondary" onclick="buyReward(${i})">Купить</button>
-            </div>
+          <div class="reward-card" data-index="${i}">
+            <div class="drag-handle" onpointerdown="startDrag(event,'rewards')">≡</div>
 
             <div class="card-main">
               <div class="card-title">${r.name}</div>
-              <div class="card-sub">цена −${r.cost}</div>
+              <div class="card-sub">цена: -${r.cost}</div>
             </div>
 
             <div class="card-actions">
+              <button class="secondary" onclick="buyReward(${i})">Получить</button>
               <button class="delete" onclick="deleteReward(${i})">✕</button>
             </div>
-
           </div>
         `;
       });
@@ -317,13 +305,8 @@
 
       quests.forEach((q, i) => {
         questsEl.innerHTML += `
-          <div class="quest-card"
-              data-index="${i}"
-              onpointerdown="startDrag(event, 'quests')">
-            
-            <div class="card-actions">
-              <button onclick="completeQuest(${i})">Выполнить</button>
-            </div>
+          <div class="quest-card" data-index="${i}">
+            <div class="drag-handle" onpointerdown="startDrag(event,'quests')">≡</div>
 
             <div class="card-main">
               <div class="card-title">${q.name}</div>
@@ -331,9 +314,9 @@
             </div>
 
             <div class="card-actions">
+              <button onclick="completeQuest(${i})">Выполнить</button>
               <button class="delete" onclick="deleteQuest(${i})">✕</button>
             </div>
-
           </div>
         `;
       });
