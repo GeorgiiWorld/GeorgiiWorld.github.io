@@ -48,7 +48,8 @@
       color: #9aa0ac;
       border: none;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 100%;
+      padding-right: 0%;
     }
     button.delete:hover {
       color: #e6e6eb;
@@ -92,11 +93,11 @@
       flex: 1;
     }
     .card-title {
-      font-weight: 600;
-      font-size: 15px;
+      font-weight: 500;
+      font-size: 100%;
     }
     .card-sub {
-      font-size: 12px;
+      font-size: 70%;
       color: #9aa0ac;
     }
     .card-actions {
@@ -106,10 +107,15 @@
     }
     .drag-handle {
       cursor: grab;
-      padding: 4px 8px;
       font-weight: bold;
+      font-size: 150%;
+      padding-right: 2%;
+      padding-left: 1%;
       user-select: none;
       touch-action: none;
+    }
+    .drag-handle:active {
+      color: #fff;
     }
     .quest-card.dragging, .reward-card.dragging {
       opacity: 0.6;
@@ -306,7 +312,7 @@
       rewards.forEach((r, i) => {
         rewardsEl.innerHTML += `
           <div class="reward-card" data-index="${i}">
-            <div class="drag-handle" onpointerdown="startDrag(event,'rewards')">≡</div>
+            <div class="drag-handle" onpointerdown="startDrag(event,'rewards')">⋮⋮</div>
 
             <div class="card-main">
               <div class="card-title">${r.name}</div>
@@ -328,7 +334,7 @@
       quests.forEach((q, i) => {
         questsEl.innerHTML += `
           <div class="quest-card" data-index="${i}">
-            <div class="drag-handle" onpointerdown="startDrag(event,'quests')">≡</div>
+            <div class="drag-handle" onpointerdown="startDrag(event,'quests')">⋮⋮</div>
 
             <div class="card-main">
               <div class="card-title">${q.name}</div>
