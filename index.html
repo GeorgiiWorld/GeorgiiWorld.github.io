@@ -87,7 +87,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      touch-action: pan-y;
+      /* touch-action: pan-y; */
     }
     .card-main {
       flex: 1;
@@ -110,6 +110,7 @@
       padding: 4px 8px;
       font-weight: bold;
       user-select: none;
+      touch-action: none;
     }
     .quest-card.dragging, .reward-card.dragging {
       opacity: 0.6;
@@ -188,19 +189,32 @@
     let drag = {
       type: null,
       from: null,
-      el: null
+      el: null,
+      startY: 0,
+      active: false
     };
+
     function startDrag(e, type) {
       drag.type = type;
-      drag.el = e.currentTarget;
+      drag.el = e.currentTarget.parentElement; // карточка
       drag.from = Number(drag.el.dataset.index);
-
-      drag.el.classList.add('dragging');
+      drag.startY = e.clientY;
+      drag.active = false;
 
       document.addEventListener('pointermove', onDragMove);
       document.addEventListener('pointerup', endDrag);
     }
+
     function onDragMove(e) {
+      const deltaY = Math.abs(e.clientY - drag.startY);
+
+      // ⛔ не считаем drag, пока не прошли порог
+      if (!drag.active) {
+        if (deltaY < 10) return; // ← КЛЮЧЕВО
+        drag.active = true;
+        drag.el.classList.add('dragging');
+      }
+
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const target = drag.type === 'quests'
         ? el?.closest('.quest-card')
@@ -219,14 +233,15 @@
       drag.from = to;
       render();
     }
+
     function endDrag() {
       if (drag.el) drag.el.classList.remove('dragging');
-
       save();
 
       drag.type = null;
       drag.from = null;
       drag.el = null;
+      drag.active = false;
 
       document.removeEventListener('pointermove', onDragMove);
       document.removeEventListener('pointerup', endDrag);
