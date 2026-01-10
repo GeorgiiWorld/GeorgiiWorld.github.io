@@ -87,7 +87,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      /* touch-action: pan-y; */
     }
     .card-main {
       flex: 1;
@@ -208,11 +207,15 @@
     function onDragMove(e) {
       const deltaY = Math.abs(e.clientY - drag.startY);
 
-      // ⛔ не считаем drag, пока не прошли порог
+      // не считаем drag, пока не прошли порог
       if (!drag.active) {
-        if (deltaY < 10) return; // ← КЛЮЧЕВО
+        if (deltaY < 10) return;
         drag.active = true;
         drag.el.classList.add('dragging');
+
+        if (navigator.vibrate) navigator.vibrate(20);
+
+        return;
       }
 
       const el = document.elementFromPoint(e.clientX, e.clientY);
@@ -229,6 +232,10 @@
 
       const item = list.splice(drag.from, 1)[0];
       list.splice(to, 0, item);
+
+      if (navigator.vibrate) {
+        navigator.vibrate(12);
+      }
 
       drag.from = to;
       render();
