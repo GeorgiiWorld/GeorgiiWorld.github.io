@@ -41,7 +41,20 @@
       cursor: pointer;
       font-size: 13px;
     }
-    button.secondary { background: #3a3f4b; padding: 0% 50% 0% 50%; }
+    button.secondary {
+      background: #3a3f4b;
+      padding: 0% 50% 0% 50%;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      button:hover {
+        background: rgb(104, 197, 197);
+        color: #0f1115;
+      }
+    }
+    button:active {
+      background: rgb(104, 197, 197);
+      color: #0f1115;
+    }
     button.danger { background: #b63c3c; }
     button.delete {
       background: transparent;
