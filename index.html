@@ -41,7 +41,7 @@
       cursor: pointer;
       font-size: 13px;
     }
-    button.secondary { background: #3a3f4b; }
+    button.secondary { background: #3a3f4b; padding: 0% 50% 0% 50%; }
     button.danger { background: #b63c3c; }
     button.delete {
       background: transparent;
@@ -101,7 +101,7 @@
       color: #9aa0ac;
     }
     .card-actions {
-      margin-right: 10px;
+      margin-right: 10%;
       display: flex;
       gap: 6px;
     }
@@ -136,7 +136,7 @@
       <h2>Баланс</h2>
       <div class="row" style="justify-content:space-between; align-items:center">
         <div class="balance" id="balance">0</div>
-        <button class="secondary" onclick="resetAll()">Сброс</button>
+        <button onclick="resetAll()">Сброс</button>
       </div>
     </div>
 
@@ -146,7 +146,7 @@
       <div class="row">
         <input id="reason" placeholder="Причина" />
         <input id="amount" type="number" placeholder="Очки (+ / -)" />
-        <button class="secondary" onclick="logCustom()">Записать</button>
+        <button onclick="logCustom()">Записать</button>
       </div>
       
     </div>
@@ -157,7 +157,7 @@
       <div class="row">
         <input id="rewardName" placeholder="Награда" />
         <input id="rewardCost" type="number" placeholder="Цена" />
-        <button class="secondary" onclick="addReward()">Добавить</button>
+        <button onclick="addReward()">Добавить</button>
       </div>
       <div id="rewards" class="card-list"></div>
     </div>
@@ -168,7 +168,7 @@
       <div class="row">
         <input id="questName" placeholder="Квест" />
         <input id="questReward" type="number" placeholder="Очки за завершение" />
-        <button class="secondary" onclick="addQuest()">Добавить</button>
+        <button onclick="addQuest()">Добавить</button>
       </div>
       <div id="quests" class="card-list"></div>
     </div>
@@ -302,7 +302,7 @@
     function renderLog(){
       logEl.innerHTML='';
       log.slice().reverse().forEach((e,idx)=>{
-        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button class="secondary" onclick="repeat(${log.length-1-idx})">↺</button></td></tr>`;
+        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button onclick="repeat(${log.length-1-idx})">↺</button></td></tr>`;
       });
     }
 
@@ -342,7 +342,7 @@
             </div>
 
             <div class="card-actions">
-              <button onclick="completeQuest(${i})">✓</button>
+              <button class="secondary" onclick="completeQuest(${i})">✓</button>
               <button class="delete" onclick="deleteQuest(${i})">✕</button>
             </div>
           </div>
