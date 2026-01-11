@@ -1,0 +1,129 @@
+body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f1115;
+      color: #e6e6eb;
+      margin: 0;
+      padding: 24px;
+    }
+    h1, h2 {
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #171a21;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      background:  #3a3f4b;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.secondary {
+      background: #3a3f4b;
+      padding: 0% 50% 0% 50%;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      button:hover {
+        background: rgb(104, 197, 197);
+        color: #0f1115;
+      }
+    }
+    button:active {
+      background: rgb(104, 197, 197);
+      color: #0f1115;
+    }
+    button.danger { background: #b63c3c; }
+    button.delete {
+      background: transparent;
+      color: #9aa0ac;
+      border: none;
+      cursor: pointer;
+      font-size: 100%;
+      padding-right: 0%;
+    }
+    button.delete:hover {
+      color: #e6e6eb;
+    }
+    input {
+      background: #0f1115;
+      color: #e6e6eb;
+      border: 1px solid #2a2f3a;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      text-align: left;
+      padding: 6px;
+      border-bottom: 1px solid #2a2f3a;
+      font-size: 13px;
+    }
+    .balance { font-size: 28px; font-weight: 700; }
+    .muted { color: #9aa0ac; font-size: 12px; }
+
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .quest-card, .reward-card {
+      background: #171a21;
+      border-radius: 12px;
+      padding-top: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-main {
+      flex: 1;
+    }
+    .card-title {
+      font-weight: 500;
+      font-size: 100%;
+    }
+    .card-sub {
+      font-size: 70%;
+      color: #9aa0ac;
+    }
+    .card-actions {
+      margin-right: 10%;
+      display: flex;
+      gap: 6px;
+    }
+    .drag-handle {
+      cursor: grab;
+      font-weight: bold;
+      font-size: 150%;
+      padding-right: 2%;
+      padding-left: 1%;
+      user-select: none;
+      touch-action: none;
+    }
+    .drag-handle:active {
+      color: #fff;
+    }
+    .quest-card.dragging, .reward-card.dragging {
+      opacity: 0.6;
+      transform: scale(0.98);
+    }
