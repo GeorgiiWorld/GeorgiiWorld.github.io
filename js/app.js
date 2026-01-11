@@ -19,14 +19,33 @@ function logCustom() {
     render();
 }
 
-function repeat(i) {
-    const e = log[i];
-    addEntry(e.reason, parseInt(e.delta));
+// function repeat(i) {
+//     const e = log[i];
+//     addEntry(e.reason, parseInt(e.delta));
+//     render();
+// }
+
+function deleteLogEntry(i) {
+    if (!confirm('Отменить операцию?')) return;
+
+    // удаляем запись
+    log.splice(i, 1);
+
+    // пересчитываем баланс
+    balance = 0;
+    for (const entry of log) {
+        balance += parseInt(entry.delta);
+        entry.balance = balance;
+    }
+
+    save();
     render();
 }
 
+
 function addReward() {
     if (!rewardName.value || !rewardCost.value) return;
+
     rewards.push({ name: rewardName.value, cost: parseInt(rewardCost.value) });
     rewardName.value = '';
     rewardCost.value = '';
@@ -37,12 +56,13 @@ function addReward() {
 function buyReward(i) {
     const r = rewards[i];
     addEntry('Награда: ' + r.name, -r.cost);
-    if (navigator.vibrate) navigator.vibrate(20);
     render();
+    if (navigator.vibrate) navigator.vibrate(20);
 }
 
 function addQuest() {
     if (!questName.value || !questReward.value) return;
+
     quests.push({ name: questName.value, reward: parseInt(questReward.value) });
     questName.value = '';
     questReward.value = '';
@@ -58,12 +78,16 @@ function completeQuest(i) {
 }
 
 function deleteReward(i) {
+    if (!confirm('Удалить награду?')) return;
+
     rewards.splice(i, 1);
     save();
     render();
 }
 
 function deleteQuest(i) {
+    if (!confirm('Удалить квест?')) return;
+
     quests.splice(i, 1);
     save();
     render();
@@ -71,6 +95,7 @@ function deleteQuest(i) {
 
 function resetAll() {
     if (!confirm('Сбросить баланс и журнал?')) return;
+
     balance = 0;
     log = [];
     localStorage.removeItem('balance');

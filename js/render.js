@@ -10,7 +10,7 @@ function render() {
 function renderLog(){
     logEl.innerHTML='';
     log.slice().reverse().forEach((e,idx)=>{
-        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button onclick="repeat(${log.length-1-idx})">↺</button></td></tr>`;
+        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button class="delete" onclick="deleteLogEntry(${log.length-1-idx})">✕</button></td></tr>`;
     });
 }
 

@@ -20,7 +20,7 @@ function onDragMove(e) {
 
         if (navigator.vibrate) navigator.vibrate(20);
 
-        return;
+        // return;
     }
 
     const el = document.elementFromPoint(e.clientX, e.clientY);
