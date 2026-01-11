@@ -14,13 +14,13 @@ function onDragMove(e) {
 
     // не считаем drag, пока не прошли порог
     if (!drag.active) {
-    if (deltaY < 10) return;
-    drag.active = true;
-    drag.el.classList.add('dragging');
+        if (deltaY < 10) return;
+        drag.active = true;
+        drag.el.classList.add('dragging');
 
-    if (navigator.vibrate) navigator.vibrate(20);
+        if (navigator.vibrate) navigator.vibrate(20);
 
-    return;
+        return;
     }
 
     const el = document.elementFromPoint(e.clientX, e.clientY);

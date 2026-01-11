@@ -37,6 +37,7 @@ function addReward() {
 function buyReward(i) {
     const r = rewards[i];
     addEntry('Награда: ' + r.name, -r.cost);
+    if (navigator.vibrate) navigator.vibrate(20);
     render();
 }
 
@@ -52,6 +53,7 @@ function addQuest() {
 function completeQuest(i) {
     const q = quests[i];
     addEntry('Квест завершён: ' + q.name, q.reward);
+    if (navigator.vibrate) navigator.vibrate(20);
     render();
 }
 
