@@ -26,12 +26,10 @@ function logCustom() {
 // }
 
 function deleteLogEntry(i) {
-    if (!confirm('Отменить операцию?')) return;
+    if (!confirm(`Отменить операцию "${log[i].reason}"?`)) return;
 
-    // удаляем запись
     log.splice(i, 1);
 
-    // пересчитываем баланс
     balance = 0;
     for (const entry of log) {
         balance += parseInt(entry.delta);
@@ -78,7 +76,8 @@ function completeQuest(i) {
 }
 
 function deleteReward(i) {
-    if (!confirm('Удалить награду?')) return;
+    const r = rewards[i];
+    if (!confirm(`Удалить награду "${r.name}" ?`)) return;
 
     rewards.splice(i, 1);
     save();
@@ -86,7 +85,8 @@ function deleteReward(i) {
 }
 
 function deleteQuest(i) {
-    if (!confirm('Удалить квест?')) return;
+    const q = quests[i];
+    if (!confirm(`Удалить квест "${q.name}"?`)) return;
 
     quests.splice(i, 1);
     save();
