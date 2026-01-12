@@ -68,10 +68,21 @@
         <tbody id="log"></tbody>
       </table>
     </div>
+      <div>
+        <input
+        type="file"
+        id="importFile"
+        accept="application/json"
+        style="display:none"
+      />
+      <button onclick="document.getElementById('importFile').click()">Импорт</button>
+      <button id="exportBtn">Экспорт</button>
+      </div>
   </div>
 
   <script src="js/state.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/importExport.js"></script>
   <script src="js/render.js"></script>
   <script src="js/drag.js"></script>
   <script src="js/app.js"></script>
