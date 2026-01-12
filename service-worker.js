@@ -1,4 +1,4 @@
-const CACHE_NAME = 'questbook-v1';
+const CACHE_NAME = 'questbook-v1.0';
 const FILES_TO_CACHE = [
   './',
   './questBook.html',
