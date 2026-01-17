@@ -48,7 +48,7 @@ function addReward() {
     rewardName.value = '';
     rewardCost.value = '';
     save();
-    render();
+    renderRewards();
 }
 
 function buyReward(i) {
@@ -61,14 +61,20 @@ function buyReward(i) {
 function addQuest() {
     if (!questName.value || !questReward.value) return;
 
-    quests.push({ name: questName.value, reward: parseInt(questReward.value) });
+    const newQuest = { name: questName.value, reward: parseInt(questReward.value) };
+    if (currentQuestTab === 'daily') {
+        dailyQuests.push(newQuest);
+    } else {
+        generalQuests.push(newQuest);
+    }
     questName.value = '';
     questReward.value = '';
     save();
-    render();
+    renderQuests();
 }
 
 function completeQuest(i) {
+    const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
     const q = quests[i];
     addEntry('Квест завершён: ' + q.name, q.reward);
     if (navigator.vibrate) navigator.vibrate(20);
@@ -81,15 +87,30 @@ function deleteReward(i) {
 
     rewards.splice(i, 1);
     save();
-    render();
+    renderRewards();
 }
 
 function deleteQuest(i) {
+    const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
     const q = quests[i];
     if (!confirm(`Удалить квест "${q.name}"?`)) return;
 
     quests.splice(i, 1);
     save();
+    renderQuests();
+}
+
+function switchQuestTab(tab) {
+    currentQuestTab = tab;
+    
+    // Обновляем активную кнопку
+    document.getElementById('dailyTabBtn').classList.toggle('active', tab === 'daily');
+    document.getElementById('generalTabBtn').classList.toggle('active', tab === 'general');
+    
+    // Обновляем контейнер
+    const container = document.getElementById('quests');
+    container.dataset.tab = tab;
+    
     render();
 }
 
@@ -104,6 +125,32 @@ function resetAll() {
 }
 
 render();
+
+// Инициализация свайпа для переключения вкладок квестов
+let swipeStartX = 0;
+let swipeStartY = 0;
+
+document.addEventListener('touchstart', (e) => {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', (e) => {
+    const swipeEndX = e.changedTouches[0].clientX;
+    const swipeEndY = e.changedTouches[0].clientY;
+    const deltaX = swipeEndX - swipeStartX;
+    const deltaY = Math.abs(swipeEndY - swipeStartY);
+    
+    // Проверяем что это горизонтальный свайп в контейнере квестов
+    const questContainer = document.getElementById('quests');
+    if (e.target.closest('#quests') && Math.abs(deltaX) > 50 && deltaY < 30) {
+        if (deltaX > 0 && currentQuestTab === 'general') {
+            switchQuestTab('daily');
+        } else if (deltaX < 0 && currentQuestTab === 'daily') {
+            switchQuestTab('general');
+        }
+    }
+});
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');

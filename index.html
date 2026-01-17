@@ -50,12 +50,16 @@
     <!-- Каталог квестов -->
     <div class="card">
       <h2>Каталог квестов</h2>
+      <div class="quest-tabs">
+        <button id="dailyTabBtn" class="tab-btn active" onclick="switchQuestTab('daily')">Ежедневные</button>
+        <button id="generalTabBtn" class="tab-btn" onclick="switchQuestTab('general')">Общие</button>
+      </div>
       <div class="row">
         <input id="questName" placeholder="Квест" />
         <input id="questReward" type="number" placeholder="Очки за завершение" />
         <button onclick="addQuest()">Добавить</button>
       </div>
-      <div id="quests" class="card-list"></div>
+      <div id="quests" class="card-list quest-container" data-tab="daily"></div>
     </div>
 
     <!-- Журнал -->

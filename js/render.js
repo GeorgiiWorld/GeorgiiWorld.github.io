@@ -38,6 +38,7 @@ function renderRewards() {
 
 function renderQuests() {
     questsEl.innerHTML = '';
+    const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
 
     quests.forEach((q, i) => {
     questsEl.innerHTML += `
@@ -84,7 +85,7 @@ function enableInlineEdit(el, type, index, field) {
 
     // показываем только число при редактировании cost/reward
     if (field === 'cost'|| field === 'reward') {
-        const list = type === 'reward' ? rewards : quests;
+        const list = type === 'reward' ? rewards : (currentQuestTab === 'daily' ? dailyQuests : generalQuests);
         el.textContent = list[index][field];
     }
 
@@ -110,7 +111,7 @@ function finishInlineEdit(el, type, index, field, oldText) {
         return;
     }
 
-    const list = type === 'reward' ? rewards : quests;
+    const list = type === 'reward' ? rewards : (currentQuestTab === 'daily' ? dailyQuests : generalQuests);
 
     if (field === 'name') {
         list[index].name = value;

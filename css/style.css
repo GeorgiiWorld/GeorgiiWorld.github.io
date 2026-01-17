@@ -127,3 +127,33 @@ body {
       opacity: 0.6;
       transform: scale(0.98);
     } */
+    .quest-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      background: #2a2f3a;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      color: #9aa0ac;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgb(104, 197, 197);
+      color: #0f1115;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .tab-btn:hover {
+        background: #3a3f4b;
+      }
+      .tab-btn.active:hover {
+        background: rgb(104, 197, 197);
+      }
+    }
+    .quest-container {
+      touch-action: pan-y;
+    }
