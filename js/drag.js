@@ -71,15 +71,15 @@ function endDrag(e) {
     // Удаляем обработчики событий
     if (drag.moveHandler) {
         document.removeEventListener('pointermove', drag.moveHandler);
+        drag.moveHandler = null;
     }
     if (drag.endHandler) {
         document.removeEventListener('pointerup', drag.endHandler);
+        drag.endHandler = null;
     }
 
+    drag.el = null;
     drag.type = null;
     drag.from = null;
-    drag.el = null;
     drag.active = false;
-    drag.moveHandler = null;
-    drag.endHandler = null;
 }

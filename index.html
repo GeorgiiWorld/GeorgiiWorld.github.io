@@ -29,18 +29,17 @@
     <div class="card">
       <h2>Доход / расход</h2>
       <div class="row">
-        <input id="reason" placeholder="Причина" />
+        <input id="reason" placeholder="Причина" type="text" />
         <input id="amount" type="number" placeholder="Очки (+ / -)" />
         <button onclick="logCustom()">Записать</button>
       </div>
-      
     </div>
 
     <!-- Каталог наград -->
     <div class="card">
       <h2>Каталог наград</h2>
       <div class="row">
-        <input id="rewardName" placeholder="Награда" />
+        <input id="rewardName" placeholder="Награда" type="text" />
         <input id="rewardCost" type="number" placeholder="Цена" />
         <button onclick="addReward()">Добавить</button>
       </div>
@@ -55,7 +54,7 @@
         <button id="generalTabBtn" class="tab-btn" onclick="switchQuestTab('general')">Общие</button>
       </div>
       <div class="row">
-        <input id="questName" placeholder="Квест" />
+        <input id="questName" placeholder="Квест" type="text" />
         <input id="questReward" type="number" placeholder="Очки за завершение" />
         <button onclick="addQuest()">Добавить</button>
       </div>
@@ -74,17 +73,18 @@
     </div>
       <div>
         <input
-        type="file"
-        id="importFile"
-        accept="application/json"
-        style="display:none"
-      />
-      <button onclick="document.getElementById('importFile').click()">Импорт</button>
-      <button id="exportBtn">Экспорт</button>
+          type="file"
+          id="importFile"
+          accept="application/json"
+          style="display:none"
+        />
+        <button onclick="document.getElementById('importFile').click()">Импорт</button>
+        <button id="exportBtn">Экспорт</button>
       </div>
   </div>
 
   <script src="js/state.js"></script>
+  <script src="js/validation.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/importExport.js"></script>
   <script src="js/render.js"></script>

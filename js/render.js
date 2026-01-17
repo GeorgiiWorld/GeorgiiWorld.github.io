@@ -9,14 +9,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Map с доступными действиями
-const actionMap = {
-    buyReward: (i) => buyReward(i),
-    deleteReward: (i) => deleteReward(i),
-    completeQuest: (i) => completeQuest(i),
-    deleteQuest: (i) => deleteQuest(i)
-};
-
 function render() {
     document.getElementById('balance').textContent = balance;
     renderLog(); renderRewards(); renderQuests();
@@ -28,12 +20,11 @@ function renderLog(){
         return `<tr>
             <td>${escapeHtml(e.date)}</td>
             <td>${escapeHtml(e.reason)}</td>
-            <td>${escapeHtml(String(e.delta))}</td>
-            <td>${escapeHtml(String(e.balance))}</td>
+            <td>${e.delta}</td>
+            <td>${e.balance}</td>
             <td><button class="delete" data-log-index="${actualIndex}">✕</button></td>
         </tr>`;
     }).join('');
-    
     logEl.querySelectorAll('[data-log-index]').forEach(btn => {
         btn.onclick = () => deleteLogEntry(parseInt(btn.dataset.logIndex));
     });
@@ -99,7 +90,7 @@ function attachHandlers(type) {
     container.querySelectorAll('[data-action]').forEach(el => {
         el.onclick = () => {
             const [action, index] = el.dataset.action.split(',');
-            actionMap[action]?.(parseInt(index));
+            actionMap[action](parseInt(index));
         };
     });
 }
@@ -150,7 +141,7 @@ function enableInlineEdit(el, type, index, field) {
 
 function finishInlineEdit(el, type, index, field, oldText) {
     el.contentEditable = false;
-    const value = el.textContent.trim();
+    let value = el.textContent.trim();
     if (!value) {
         render();
         return;
@@ -159,10 +150,14 @@ function finishInlineEdit(el, type, index, field, oldText) {
     const list = type === 'reward' ? rewards : (currentQuestTab === 'daily' ? dailyQuests : generalQuests);
 
     if (field === 'name') {
-        list[index].name = value;
+        // Валидируем текст при редактировании (через contentEditable может прийти странный контент)
+        value = validateUserInput(value);
+        if (value) list[index].name = value;
     } else if (field === 'cost' || field === 'reward') {
         const num = parseInt(value);
-        if (!isNaN(num)) list[index][field] = num;
+        if (!isNaN(num) && isValidNumber(num, 50000)) {
+            list[index][field] = num;
+        }
     }
 
     save();

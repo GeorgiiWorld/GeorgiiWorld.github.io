@@ -39,15 +39,15 @@ document.getElementById('importFile').addEventListener('change', e => {
 
             if (!confirm('Заменить текущие данные импортированными?')) return;
 
-            // Устанавливаем баланс и логи
-            balance = data.balance ?? 0;
-            log = Array.isArray(data.log) ? data.log : [];
-            rewards = Array.isArray(data.rewards) ? data.rewards : [];
-            presets = data.presets ?? {};
+            // Устанавливаем баланс и логи с валидацией
+            balance = isValidNumber(data.balance) ? parseInt(data.balance) : 0;
+            log = validateLogArray(data.log);
+            rewards = validateRewardsArray(data.rewards);
+            presets = (data.presets && typeof data.presets === 'object') ? data.presets : {};
 
             // Обработка ежедневных квестов (только если версия 2)
             if (data.version === 2 && Array.isArray(data.dailyQuests)) {
-                dailyQuests = data.dailyQuests;
+                dailyQuests = validateQuestsArray(data.dailyQuests);
             } else {
                 dailyQuests = [];
             }
@@ -55,10 +55,10 @@ document.getElementById('importFile').addEventListener('change', e => {
             // Обработка общих квестов - совместимость со старой версией
             if (Array.isArray(data.generalQuests)) {
                 // Новая структура с generalQuests
-                generalQuests = data.generalQuests;
+                generalQuests = validateQuestsArray(data.generalQuests);
             } else if (Array.isArray(data.quests)) {
                 // Старая структура с quests - переносим в generalQuests
-                generalQuests = data.quests;
+                generalQuests = validateQuestsArray(data.quests);
             } else {
                 generalQuests = [];
             }

@@ -1,126 +1,200 @@
 load();
 
+// Map с доступными действиями (должна быть после load() чтобы функции были определены)
+const actionMap = {
+    buyReward: (i) => buyReward(i),
+    deleteReward: (i) => deleteReward(i),
+    completeQuest: (i) => completeQuest(i),
+    deleteQuest: (i) => deleteQuest(i)
+};
+
+/**
+ * Добавляет новую запись в журнал
+ * @param {string} reason - Причина операции
+ * @param {number} delta - Изменение баланса
+ * @returns {boolean} True если успешно
+ */
 function addEntry(reason, delta) {
-    if (balance + delta < 0) return;
-    balance += delta;
-    log.push({ date: new Date().toLocaleString(), reason, delta: delta > 0 ? '+' + delta : delta, balance });
-    const key = reason + '|' + delta;
+    // Валидация reason с большим лимитом для системных сообщений
+    const validReason = validateUserInput(reason, 500);
+    if (!validReason) return false;
+    
+    const numDelta = parseInt(delta);
+    if (isNaN(numDelta)) return false;
+    
+    if (balance + numDelta < 0) {
+        alert('Недостаточно очков!');
+        return false;
+    }
+    
+    balance += numDelta;
+    log.push({ 
+        date: new Date().toLocaleString(), 
+        reason: validReason, 
+        delta: numDelta > 0 ? '+' + numDelta : numDelta, 
+        balance 
+    });
+    // Сохраняем пресет для автодополнения (используем validReason чтобы избежать ошибок)
+    const key = validReason + '|' + numDelta;
     presets[key] = (presets[key] || 0) + 1;
     save();
+    return true;
 }
 
-function logCustom() {
-    const r = reason.value.trim();
-    const a = parseInt(amount.value);
-    if (!r || isNaN(a)) return;
-    addEntry(r, a);
-    reason.value = '';
-    amount.value = '';
-    render();
-}
-
-// function repeat(i) {
-//     const e = log[i];
-//     addEntry(e.reason, parseInt(e.delta));
-//     render();
-// }
-
-function deleteLogEntry(i) {
-    if (!confirm(`Отменить операцию "${log[i].reason}"?`)) return;
-
-    log.splice(i, 1);
-
-    balance = 0;
-    for (const entry of log) {
-        balance += parseInt(entry.delta);
-        entry.balance = balance;
+/**
+ * Добавляет новый квест
+ */
+function addQuest() {
+    const name = validateUserInput(document.getElementById('questName').value);
+    const reward = parseInt(document.getElementById('questReward').value);
+    
+    if (!name) {
+        alert('Введите название квеста');
+        return;
+    }
+    
+    if (!isValidNumber(reward, 50000)) {
+        alert('Награда должна быть числом от 0 до 50000');
+        return;
     }
 
-    save();
-    render();
-}
-
-
-function addReward() {
-    if (!rewardName.value || !rewardCost.value) return;
-
-    rewards.push({ name: rewardName.value, cost: parseInt(rewardCost.value) });
-    rewardName.value = '';
-    rewardCost.value = '';
-    save();
-    renderRewards();
-}
-
-function buyReward(i) {
-    const r = rewards[i];
-    addEntry('Награда: ' + r.name, -r.cost);
-    render();
-    if (navigator.vibrate) navigator.vibrate(20);
-}
-
-function addQuest() {
-    if (!questName.value || !questReward.value) return;
-
-    const newQuest = { name: questName.value, reward: parseInt(questReward.value) };
+    const newQuest = { name, reward };
     if (currentQuestTab === 'daily') {
         dailyQuests.push(newQuest);
     } else {
         generalQuests.push(newQuest);
     }
-    questName.value = '';
-    questReward.value = '';
+    document.getElementById('questName').value = '';
+    document.getElementById('questReward').value = '';
     save();
     renderQuests();
 }
 
+/**
+ * Добавляет новую награду
+ */
+function addReward() {
+    const name = validateUserInput(document.getElementById('rewardName').value);
+    const cost = parseInt(document.getElementById('rewardCost').value);
+    
+    if (!name) {
+        alert('Введите название награды');
+        return;
+    }
+    
+    if (!isValidNumber(cost, 50000)) {
+        alert('Стоимость должна быть числом от 0 до 50000');
+        return;
+    }
+
+    rewards.push({ name, cost });
+    document.getElementById('rewardName').value = '';
+    document.getElementById('rewardCost').value = '';
+    save();
+    renderRewards();
+}
+
+/**
+ * Добавляет запись вручную (доход/расход)
+ */
+function logCustom() {
+    const reason = validateUserInput(document.getElementById('reason').value, 500);
+    const amount = parseInt(document.getElementById('amount').value);
+    
+    if (!reason) {
+        alert('Введите причину');
+        return;
+    }
+    
+    if (!isValidNumber(Math.abs(amount), 999999)) {
+        alert('Сумма должна быть числом');
+        return;
+    }
+    
+    if (addEntry(reason, amount)) {
+        document.getElementById('reason').value = '';
+        document.getElementById('amount').value = '';
+        render();
+    }
+}
+
+/**
+ * Покупает награду и вычитает очки
+ */
+function buyReward(i) {
+    const r = rewards[i];
+    if (addEntry('Награда: ' + r.name, -r.cost)) {
+        render();
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
+}
+
+/**
+ * Завершает квест и добавляет очки
+ */
 function completeQuest(i) {
     const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
     const q = quests[i];
-    addEntry('Квест завершён: ' + q.name, q.reward);
-    if (navigator.vibrate) navigator.vibrate(20);
-    render();
+    if (addEntry('Квест завершён: ' + q.name, q.reward)) {
+        if (navigator.vibrate) navigator.vibrate(20);
+        render();
+    }
 }
 
+/**
+ * Удаляет награду
+ */
 function deleteReward(i) {
     const r = rewards[i];
     if (!confirm(`Удалить награду "${r.name}" ?`)) return;
-
     rewards.splice(i, 1);
     save();
     renderRewards();
 }
 
+/**
+ * Удаляет квест
+ */
 function deleteQuest(i) {
     const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
     const q = quests[i];
     if (!confirm(`Удалить квест "${q.name}"?`)) return;
-
     quests.splice(i, 1);
     save();
     renderQuests();
 }
 
+/**
+ * Переключает вкладку квестов
+ */
 function switchQuestTab(tab) {
     currentQuestTab = tab;
-    
-    // Обновляем активную кнопку
     document.getElementById('dailyTabBtn').classList.toggle('active', tab === 'daily');
     document.getElementById('generalTabBtn').classList.toggle('active', tab === 'general');
-    
-    // Обновляем контейнер
-    const container = document.getElementById('quests');
-    container.dataset.tab = tab;
-    
+    document.getElementById('quests').dataset.tab = tab;
     render();
 }
 
+/**
+ * Сбрасывает баланс, журнал и пресеты
+ */
 function resetAll() {
     if (!confirm('Сбросить баланс и журнал?')) return;
-
     balance = 0;
     log = [];
+    presets = {};
     localStorage.removeItem('balance');
     localStorage.removeItem('log');
+    localStorage.removeItem('presets');
+    render();
+}
+
+/**
+ * Удаляет запись из журнала
+ */
+function deleteLogEntry(i) {
+    log.splice(i, 1);
+    save();
     render();
 }
 
