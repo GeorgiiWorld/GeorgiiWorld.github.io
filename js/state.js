@@ -11,5 +11,7 @@ let drag = {
     el: null,
     startY: 0,
     startX: 0,
-    active: false
+    active: false,
+    moveHandler: null,
+    endHandler: null
 };

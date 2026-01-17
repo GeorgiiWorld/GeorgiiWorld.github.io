@@ -1,4 +1,7 @@
 function startDrag(e, type) {
+    // Предотвращаем множественные инициализации drag
+    if (drag.active) return;
+    
     drag.type = type;
     drag.el = e.currentTarget.parentElement; // карточка
     drag.from = Number(drag.el.dataset.index);
@@ -6,8 +9,15 @@ function startDrag(e, type) {
     drag.startX = e.clientX;
     drag.active = false;
 
-    document.addEventListener('pointermove', onDragMove);
-    document.addEventListener('pointerup', endDrag);
+    const handleDragMove = onDragMove.bind(null);
+    const handleDragEnd = endDrag.bind(null);
+    
+    // Сохраняем обработчики для последующего удаления
+    drag.moveHandler = handleDragMove;
+    drag.endHandler = handleDragEnd;
+    
+    document.addEventListener('pointermove', handleDragMove);
+    document.addEventListener('pointerup', handleDragEnd);
 }
 
 function onDragMove(e) {
@@ -56,28 +66,20 @@ function onDragMove(e) {
 function endDrag(e) {
     if (drag.el) drag.el.classList.remove('dragging');
     
-    // Обработка свайпа для переключения вкладок квестов
-    if (drag.type === 'quests' && drag.active) {
-        const deltaX = e.clientX - drag.startX;
-        
-        if (Math.abs(deltaX) > 50) { // минимальное расстояние свайпа
-            if (deltaX > 0 && currentQuestTab === 'general') {
-                // Свайп вправо - переключаемся на ежедневные квесты
-                switchQuestTab('daily');
-            } else if (deltaX < 0 && currentQuestTab === 'daily') {
-                // Свайп влево - переключаемся на общие квесты
-                switchQuestTab('general');
-            }
-        }
-    }
-    
     save();
+
+    // Удаляем обработчики событий
+    if (drag.moveHandler) {
+        document.removeEventListener('pointermove', drag.moveHandler);
+    }
+    if (drag.endHandler) {
+        document.removeEventListener('pointerup', drag.endHandler);
+    }
 
     drag.type = null;
     drag.from = null;
     drag.el = null;
     drag.active = false;
-
-    document.removeEventListener('pointermove', onDragMove);
-    document.removeEventListener('pointerup', endDrag);
+    drag.moveHandler = null;
+    drag.endHandler = null;
 }

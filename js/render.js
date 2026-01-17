@@ -2,60 +2,105 @@ const logEl = document.getElementById('log');
 const rewardsEl = document.getElementById('rewards');
 const questsEl = document.getElementById('quests');
 
+// Экранировка HTML для безопасности
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Map с доступными действиями
+const actionMap = {
+    buyReward: (i) => buyReward(i),
+    deleteReward: (i) => deleteReward(i),
+    completeQuest: (i) => completeQuest(i),
+    deleteQuest: (i) => deleteQuest(i)
+};
+
 function render() {
     document.getElementById('balance').textContent = balance;
     renderLog(); renderRewards(); renderQuests();
 }
 
 function renderLog(){
-    logEl.innerHTML='';
-    log.slice().reverse().forEach((e,idx)=>{
-        logEl.innerHTML+=`<tr><td>${e.date}</td><td>${e.reason}</td><td>${e.delta}</td><td>${e.balance}</td><td><button class="delete" onclick="deleteLogEntry(${log.length-1-idx})">✕</button></td></tr>`;
+    logEl.innerHTML = log.slice().reverse().map((e, idx) => {
+        const actualIndex = log.length - 1 - idx;
+        return `<tr>
+            <td>${escapeHtml(e.date)}</td>
+            <td>${escapeHtml(e.reason)}</td>
+            <td>${escapeHtml(String(e.delta))}</td>
+            <td>${escapeHtml(String(e.balance))}</td>
+            <td><button class="delete" data-log-index="${actualIndex}">✕</button></td>
+        </tr>`;
+    }).join('');
+    
+    logEl.querySelectorAll('[data-log-index]').forEach(btn => {
+        btn.onclick = () => deleteLogEntry(parseInt(btn.dataset.logIndex));
     });
 }
 
 function renderRewards() {
-    rewardsEl.innerHTML = '';
-
-    rewards.forEach((r, i) => {
-    rewardsEl.innerHTML += `
+    rewardsEl.innerHTML = rewards.map((r, i) => `
         <div class="reward-card" data-index="${i}">
-            <div class="drag-handle" onpointerdown="startDrag(event,'rewards')">⋮⋮</div>
-
+            <div class="drag-handle" data-drag="${i},rewards">⋮⋮</div>
             <div class="card-main">
-                <div class="card-title" onpointerdown="startInlineEdit(event, 'reward', ${i}, 'name')">${r.name}</div>
-                <div class="card-sub" onpointerdown="startInlineEdit(event, 'reward', ${i}, 'cost')">цена: -${r.cost}</div>
+                <div class="card-title" data-edit="reward,${i},name">${escapeHtml(r.name)}</div>
+                <div class="card-sub" data-edit="reward,${i},cost">цена: -${r.cost}</div>
             </div>
-
             <div class="card-actions">
-                <button class="secondary" onclick="buyReward(${i})">✓</button>
-                <button class="delete" onclick="deleteReward(${i})">✕</button>
+                <button class="secondary" data-action="buyReward,${i}">✓</button>
+                <button class="delete" data-action="deleteReward,${i}">✕</button>
             </div>
         </div>
-    `;
-    });
+    `).join('');
+    
+    attachHandlers('reward');
 }
 
 function renderQuests() {
-    questsEl.innerHTML = '';
     const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
-
-    quests.forEach((q, i) => {
-    questsEl.innerHTML += `
+    questsEl.innerHTML = quests.map((q, i) => `
         <div class="quest-card" data-index="${i}">
-            <div class="drag-handle" onpointerdown="startDrag(event,'quests')">⋮⋮</div>
-
+            <div class="drag-handle" data-drag="${i},quests">⋮⋮</div>
             <div class="card-main">
-                <div class="card-title" onpointerdown="startInlineEdit(event, 'quest', ${i}, 'name')">${q.name}</div>
-                <div class="card-sub" onpointerdown="startInlineEdit(event, 'quest', ${i}, 'reward')">награда +${q.reward}</div>
+                <div class="card-title" data-edit="quest,${i},name">${escapeHtml(q.name)}</div>
+                <div class="card-sub" data-edit="quest,${i},reward">награда +${q.reward}</div>
             </div>
-
             <div class="card-actions">
-                <button class="secondary" onclick="completeQuest(${i})">✓</button>
-                <button class="delete" onclick="deleteQuest(${i})">✕</button>
+                <button class="secondary" data-action="completeQuest,${i}">✓</button>
+                <button class="delete" data-action="deleteQuest,${i}">✕</button>
             </div>
         </div>
-    `;
+    `).join('');
+    
+    attachHandlers('quest');
+}
+
+function attachHandlers(type) {
+    const container = type === 'reward' ? rewardsEl : questsEl;
+    
+    // Drag handlers
+    container.querySelectorAll('[data-drag]').forEach(el => {
+        el.onpointerdown = (e) => {
+            const [index, dragType] = el.dataset.drag.split(',');
+            startDrag(e, dragType);
+        };
+    });
+    
+    // Edit handlers
+    container.querySelectorAll('[data-edit]').forEach(el => {
+        el.onpointerdown = (e) => {
+            const [editType, index, field] = el.dataset.edit.split(',');
+            startInlineEdit(e, editType, parseInt(index), field);
+        };
+    });
+    
+    // Action handlers
+    container.querySelectorAll('[data-action]').forEach(el => {
+        el.onclick = () => {
+            const [action, index] = el.dataset.action.split(',');
+            actionMap[action]?.(parseInt(index));
+        };
     });
 }
 
