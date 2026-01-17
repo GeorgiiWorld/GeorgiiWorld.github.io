@@ -12,12 +12,4 @@ function load() {
     dailyQuests = JSON.parse(localStorage.getItem('dailyQuests') || '[]');
     generalQuests = JSON.parse(localStorage.getItem('generalQuests') || '[]');
     rewards = JSON.parse(localStorage.getItem('rewards') || '[]');
-    
-    // Миграция старых квестов в общие (если они есть)
-    const oldQuests = JSON.parse(localStorage.getItem('quests') || '[]');
-    if (oldQuests.length > 0 && generalQuests.length === 0) {
-        generalQuests = oldQuests;
-        save();
-        localStorage.removeItem('quests');
-    }
 }

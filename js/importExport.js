@@ -5,10 +5,11 @@ function exportData() {
     const data = {
         balance,
         log,
-        quests,
+        dailyQuests,
+        generalQuests,
         rewards,
         presets,
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString()
     };
 
@@ -38,11 +39,29 @@ document.getElementById('importFile').addEventListener('change', e => {
 
             if (!confirm('Заменить текущие данные импортированными?')) return;
 
+            // Устанавливаем баланс и логи
             balance = data.balance ?? 0;
             log = Array.isArray(data.log) ? data.log : [];
-            quests = Array.isArray(data.quests) ? data.quests : [];
             rewards = Array.isArray(data.rewards) ? data.rewards : [];
             presets = data.presets ?? {};
+
+            // Обработка ежедневных квестов (только если версия 2)
+            if (data.version === 2 && Array.isArray(data.dailyQuests)) {
+                dailyQuests = data.dailyQuests;
+            } else {
+                dailyQuests = [];
+            }
+
+            // Обработка общих квестов - совместимость со старой версией
+            if (Array.isArray(data.generalQuests)) {
+                // Новая структура с generalQuests
+                generalQuests = data.generalQuests;
+            } else if (Array.isArray(data.quests)) {
+                // Старая структура с quests - переносим в generalQuests
+                generalQuests = data.quests;
+            } else {
+                generalQuests = [];
+            }
 
             save();
             render();
