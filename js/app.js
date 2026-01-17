@@ -1,3 +1,25 @@
+/**
+ * ОСНОВНОЙ МОДУЛЬ ПРИЛОЖЕНИЯ (app.js)
+ * 
+ * Отвечает за бизнес-логику:
+ * - Управление квестами и наградами
+ * - Ведение журнала транзакций
+ * - Обработка пользовательских действий
+ * 
+ * Архитектура:
+ * 1. load() - инициализация при загрузке страницы
+ * 2. actionMap - маршрутизация действий из UI
+ * 3. Функции добавления данных (addQuest, addReward, logCustom)
+ * 4. Функции редактирования данных (completeQuest, buyReward, deleteQuest, deleteReward)
+ * 5. Функции управления состоянием (switchQuestTab, resetAll)
+ * 
+ * Лучшие практики:
+ * - Все действия должны пройти валидацию перед сохранением
+ * - Вызов save() и render() в конце каждой операции
+ * - Использование LIMITS для управления ограничениями
+ * - Защита от отрицательного баланса
+ */
+
 load();
 
 // Map с доступными действиями (должна быть после load() чтобы функции были определены)
@@ -15,8 +37,7 @@ const actionMap = {
  * @returns {boolean} True если успешно
  */
 function addEntry(reason, delta) {
-    // Валидация reason с большим лимитом для системных сообщений
-    const validReason = validateUserInput(reason, 500);
+    const validReason = validateUserInput(reason, LIMITS.MAX_REASON_LENGTH);
     if (!validReason) return false;
     
     const numDelta = parseInt(delta);
@@ -34,7 +55,6 @@ function addEntry(reason, delta) {
         delta: numDelta > 0 ? '+' + numDelta : numDelta, 
         balance 
     });
-    // Сохраняем пресет для автодополнения (используем validReason чтобы избежать ошибок)
     const key = validReason + '|' + numDelta;
     presets[key] = (presets[key] || 0) + 1;
     save();
@@ -53,8 +73,8 @@ function addQuest() {
         return;
     }
     
-    if (!isValidNumber(reward, 50000)) {
-        alert('Награда должна быть числом от 0 до 50000');
+    if (!isValidNumber(reward, LIMITS.MAX_QUEST_REWARD)) {
+        alert(`Награда должна быть числом от 0 до ${LIMITS.MAX_QUEST_REWARD}`);
         return;
     }
 
@@ -82,8 +102,8 @@ function addReward() {
         return;
     }
     
-    if (!isValidNumber(cost, 50000)) {
-        alert('Стоимость должна быть числом от 0 до 50000');
+    if (!isValidNumber(cost, LIMITS.MAX_REWARD_COST)) {
+        alert(`Стоимость должна быть числом от 0 до ${LIMITS.MAX_REWARD_COST}`);
         return;
     }
 
@@ -98,7 +118,7 @@ function addReward() {
  * Добавляет запись вручную (доход/расход)
  */
 function logCustom() {
-    const reason = validateUserInput(document.getElementById('reason').value, 500);
+    const reason = validateUserInput(document.getElementById('reason').value, LIMITS.MAX_REASON_LENGTH);
     const amount = parseInt(document.getElementById('amount').value);
     
     if (!reason) {
@@ -106,7 +126,7 @@ function logCustom() {
         return;
     }
     
-    if (!isValidNumber(Math.abs(amount), 999999)) {
+    if (!isValidNumber(Math.abs(amount), LIMITS.MAX_ENTRY_DELTA)) {
         alert('Сумма должна быть числом');
         return;
     }
@@ -125,7 +145,7 @@ function buyReward(i) {
     const r = rewards[i];
     if (addEntry('Награда: ' + r.name, -r.cost)) {
         render();
-        if (navigator.vibrate) navigator.vibrate(20);
+        if (navigator.vibrate) navigator.vibrate(LIMITS.VIBRATE_DRAG_START);
     }
 }
 
@@ -136,7 +156,7 @@ function completeQuest(i) {
     const quests = currentQuestTab === 'daily' ? dailyQuests : generalQuests;
     const q = quests[i];
     if (addEntry('Квест завершён: ' + q.name, q.reward)) {
-        if (navigator.vibrate) navigator.vibrate(20);
+        if (navigator.vibrate) navigator.vibrate(LIMITS.VIBRATE_DRAG_START);
         render();
     }
 }
@@ -201,23 +221,19 @@ function deleteLogEntry(i) {
 render();
 
 // Инициализация свайпа для переключения вкладок квестов
-let swipeStartX = 0;
-let swipeStartY = 0;
-
 document.addEventListener('touchstart', (e) => {
-    swipeStartX = e.touches[0].clientX;
-    swipeStartY = e.touches[0].clientY;
+    swipe.startX = e.touches[0].clientX;
+    swipe.startY = e.touches[0].clientY;
 });
 
 document.addEventListener('touchend', (e) => {
     const swipeEndX = e.changedTouches[0].clientX;
     const swipeEndY = e.changedTouches[0].clientY;
-    const deltaX = swipeEndX - swipeStartX;
-    const deltaY = Math.abs(swipeEndY - swipeStartY);
+    const deltaX = swipeEndX - swipe.startX;
+    const deltaY = Math.abs(swipeEndY - swipe.startY);
     
-    // Проверяем что это горизонтальный свайп в контейнере квестов
-    const questContainer = document.getElementById('quests');
-    if (e.target.closest('#quests') && Math.abs(deltaX) > 50 && deltaY < 30) {
+    // Проверяем горизонтальный свайп в контейнере квестов
+    if (e.target.closest('#quests') && Math.abs(deltaX) > LIMITS.SWIPE_THRESHOLD && deltaY < LIMITS.SWIPE_VERTICAL_THRESHOLD) {
         if (deltaX > 0 && currentQuestTab === 'general') {
             switchQuestTab('daily');
         } else if (deltaX < 0 && currentQuestTab === 'daily') {
