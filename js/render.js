@@ -48,7 +48,7 @@ function renderLog() {
     logEl.innerHTML = log.slice().reverse().map((e, idx) => {
         const actualIndex = log.length - 1 - idx;
         return `<tr>
-            <td>${escapeHtml(e.date)}</td>
+            <td>${escapeHtml(e.date).replace(/\n/g, '<br>')}</td>
             <td>${escapeHtml(e.reason)}</td>
             <td>${e.delta}</td>
             <td>${e.balance}</td>

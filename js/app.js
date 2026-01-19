@@ -50,7 +50,7 @@ function addEntry(reason, delta) {
     
     balance += numDelta;
     log.push({ 
-        date: new Date().toLocaleString(), 
+        date: new Date().toLocaleString(),
         reason: validReason, 
         delta: numDelta > 0 ? '+' + numDelta : numDelta, 
         balance 

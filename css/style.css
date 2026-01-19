@@ -3,7 +3,7 @@ body {
       background: #0f1115;
       color: #e6e6eb;
       margin: 0;
-      padding: 24px;
+      padding: 12px;
     }
     h1, h2 {
       font-weight: 600;
@@ -78,6 +78,17 @@ body {
       padding: 6px;
       border-bottom: 1px solid #2a2f3a;
       font-size: 13px;
+    }
+    th:first-child, td:first-child {
+      width: 70px;
+      vertical-align: top;
+    }
+    th:nth-child(2), td:nth-child(2) {
+      width: 50%;
+    }
+    th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4), td:last-child {
+      width: 60px;
+      text-align: center;
     }
     .balance { font-size: 28px; font-weight: 700; }
     .muted { color: #9aa0ac; font-size: 12px; }
