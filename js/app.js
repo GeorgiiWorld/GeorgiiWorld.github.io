@@ -214,6 +214,12 @@ function resetAll() {
  */
 function deleteLogEntry(i) {
     log.splice(i, 1);
+    balance = 0;
+    for (let entry of log) {
+        const delta = parseInt(entry.delta);
+        balance += delta;
+        entry.balance = balance;
+    }
     save();
     render();
 }
