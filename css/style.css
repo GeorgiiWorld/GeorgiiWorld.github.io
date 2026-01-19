@@ -36,7 +36,7 @@ body {
     }
     button.secondary {
       background: #3a3f4b;
-      padding: 0% 50% 0% 50%;
+      padding: 6px 20px;
     }
     @media (hover: hover) and (pointer: fine) {
       button:hover {
@@ -54,8 +54,7 @@ body {
       color: #9aa0ac;
       border: none;
       cursor: pointer;
-      font-size: 100%;
-      padding-right: 0%;
+      font-size: 13px;
     }
     button.delete:hover {
       color: #e6e6eb;
@@ -80,15 +79,14 @@ body {
       font-size: 13px;
     }
     th:first-child, td:first-child {
-      width: 70px;
       vertical-align: top;
     }
     th:nth-child(2), td:nth-child(2) {
-      width: 50%;
+      width: 100%;
     }
     th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4), td:last-child {
-      width: 60px;
-      text-align: center;
+      text-align: right;
+      vertical-align: top;
     }
     .balance { font-size: 28px; font-weight: 700; }
     .muted { color: #9aa0ac; font-size: 12px; }
@@ -118,16 +116,14 @@ body {
       color: #9aa0ac;
     }
     .card-actions {
-      margin-right: 10%;
       display: flex;
       gap: 6px;
     }
     .drag-handle {
       cursor: grab;
       font-weight: bold;
-      font-size: 150%;
-      padding-right: 2%;
-      padding-left: 1%;
+      font-size: 24px;
+      padding-right: 10px;
       user-select: none;
       touch-action: none;
     }
