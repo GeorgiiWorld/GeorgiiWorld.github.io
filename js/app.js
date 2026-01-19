@@ -69,7 +69,7 @@ function addQuest() {
     const reward = parseInt(document.getElementById('questReward').value);
     
     if (!name) {
-        alert('Введите название квеста');
+        alert(`Введите название квеста до ${LIMITS.MAX_INPUT_LENGTH} символов`);
         return;
     }
     
@@ -98,7 +98,7 @@ function addReward() {
     const cost = parseInt(document.getElementById('rewardCost').value);
     
     if (!name) {
-        alert('Введите название награды');
+        alert(`Введите название награды до ${LIMITS.MAX_INPUT_LENGTH} символов`);
         return;
     }
     
@@ -213,6 +213,8 @@ function resetAll() {
  * Удаляет запись из журнала
  */
 function deleteLogEntry(i) {
+    const entry = log[i];
+    if (!confirm(`Удалить запись "${entry.reason}"?`)) return;
     log.splice(i, 1);
     balance = 0;
     for (let entry of log) {
@@ -251,4 +253,3 @@ document.addEventListener('touchend', (e) => {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');
 }
-
